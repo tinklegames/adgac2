@@ -176,6 +176,14 @@
                 }).then((unityInstance) => {
                     myGameInstance = unityInstance;
                     loadingCover.style.display = "none";
+                    setTimeout(() => {
+        try {
+            unityInstance.SendMessage('YandexGame', 'SetLanguage', 'en');
+            console.log("[Language] Forced English");
+        } catch (e) {
+            console.warn("Language set failed:", e);
+        }
+    }, 500);
                 }).catch((message) => {
                     console.error(message);
                     showUnityWarning(message);
@@ -227,4 +235,5 @@
     </script>
 </body>
 </html>
+
 
