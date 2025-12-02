@@ -1,21 +1,20 @@
 <!DOCTYPE html>
-
 <html lang="en-us">
-<head><meta charset="utf-8"/>
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
-<link rel="stylesheet" href="./style.css"/>
-<style>
-        /* Убираем выделение по нажатию клавиш */
+<head>
+    <meta http-equiv="Content-Security-Policy" content="child-src 'self'; frame-ancestors 'self'">
+    <meta charset="utf-8"/>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+    <link rel="stylesheet" href="./style.css"/>
+
+    <style>
         canvas:focus {
             outline: none;
         }
 
         html, body {
-            /* Убираем отступы */
             padding: 0;
             margin: 0;
-            /* Отключаем скролл и лонгтап на IOS */
             overflow: hidden;
             -webkit-touch-callout: none;
             -webkit-user-select: none;
@@ -24,175 +23,185 @@
             -ms-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: rgba(0,0,0,0);
-            /* Ставим высоту на 100% */
             height: 100%;
         }
+
+        #loading-cover {
+            position: fixed;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #000;
+            z-index: 10;
+        }
+
+        #unity-loading-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            color: #fff;
+            font-family: sans-serif;
+        }
+
+        #unity-logo img {
+            max-width: 180px;
+            max-height: 80px;
+        }
+
+        #unity-progress-bar-empty {
+            width: 220px;
+            height: 10px;
+            background: #444;
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        #unity-progress-bar-full {
+            width: 0%;
+            height: 100%;
+            background: #4af;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 4px solid #444;
+            border-top-color: #fff;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
     </style>
-<!-- Additional head modules -->
 </head>
 
 <body class="dark">
-<div id="unity-container" class="unity-desktop">
-<canvas id="unity-canvas" tabindex="-1"></canvas>
-</div>
-<div id="loading-cover" style="display:none;">
-<div id="unity-loading-bar">
-<div id="unity-logo"><img src="logo.png"/></div>
-<div id="unity-progress-bar-empty" style="display: none;">
-<div id="unity-progress-bar-full"></div>
-</div>
-<div class="spinner"></div>
-</div>
-</div>
-<!-- Additional body modules -->
+    <div id="unity-container" class="unity-desktop">
+        <canvas id="unity-canvas" tabindex="-1"></canvas>
+    </div>
 
-<script>
-    const hideFullScreenButton = "";
-    const buildUrl = "Build";
-    const loaderUrl = buildUrl + "/Test.loader.js";
-    const config = {
-        dataUrl: buildUrl + "/Test.data.gz",
-        frameworkUrl: buildUrl + "/Test.framework.js.gz",
-        codeUrl: buildUrl + "/Test.wasm.gz",
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "Mishmek",
-        productName: "Polzun",
-        productVersion: "1.0.0.0"
-    };
+    <div id="loading-cover">
+        <div id="unity-loading-bar">
+            <div id="unity-logo"><img src="logo.png" alt="logo"/></div>
+            <div id="unity-progress-bar-empty" style="display:none;">
+                <div id="unity-progress-bar-full"></div>
+            </div>
+            <div class="spinner"></div>
+        </div>
+    </div>
 
-    const container = document.querySelector("#unity-container");
-    const canvas = document.querySelector("#unity-canvas");
-    const loadingCover = document.querySelector("#loading-cover");
-    const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
-    const progressBarFull = document.querySelector("#unity-progress-bar-full");
-    const spinner = document.querySelector(".spinner");
-
-    // Basic mobile handling similar-ish to Unity default template
-    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
-        canvas.style.width = window.innerWidth + "px";
-        canvas.style.height = window.innerHeight + "px";
-        config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-    }
-
-    function showUnityWarning(message) {
-        console.warn(message);
-    }
-
-    let myGameInstance = null;
-    let StartUnityInstance = null;
-
-    function StartUnityInstance_IfUnloaded() {
-        if (typeof StartUnityInstance === "function" && spinner.style.display !== "none") {
-            StartUnityInstance();
-        }
-    }
-
-    // Create Unity loader script
-    const script = document.createElement("script");
-    script.src = loaderUrl;
-    script.onload = () => {
-        StartUnityInstance = function () {
-            createUnityInstance(canvas, config, (progress) => {
-                spinner.style.display = "none";
-                progressBarEmpty.style.display = "";
-                progressBarFull.style.width = `${100 * progress}%`;
-            }).then((unityInstance) => {
-                myGameInstance = unityInstance;
-                loadingCover.style.display = "none";
-            }).catch((message) => {
-                console.error(message);
-                showUnityWarning(message);
-            });
+    <script>
+        // 🔹 Stub for old Yandex environment hook so Unity JS plugin stops crashing
+        var environmentData = {
+            lang: (navigator.language || "en").split("-")[0],
+            language: (navigator.language || "en").split("-")[0],
+            device: /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ? "mobile" : "desktop",
+            sdk: "none"
         };
 
-        // Auto-start Unity once loader is ready
-        StartUnityInstance_IfUnloaded();
-    };
-    script.onerror = () => {
-        showUnityWarning("Failed to load Unity loader script.");
-    };
+        const hideFullScreenButton = "";
+        const buildUrl = "Build";
+        const loaderUrl = buildUrl + "/Test.loader.js";
+        const config = {
+            dataUrl: buildUrl + "/Test.data.gz",
+            frameworkUrl: buildUrl + "/Test.framework.js.gz",
+            codeUrl: buildUrl + "/Test.wasm.gz",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "Mishmek",
+            productName: "Polzun",
+            productVersion: "1.0.0.0"
+        };
 
-    document.body.appendChild(script);
+        const container = document.querySelector("#unity-container");
+        const canvas = document.querySelector("#unity-canvas");
+        const loadingCover = document.querySelector("#loading-cover");
+        const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+        const progressBarFull = document.querySelector("#unity-progress-bar-full");
+        const spinner = document.querySelector(".spinner");
 
-    // ---- Stub functions to avoid errors from old Yandex integration in the build ----
-    // These just log and (optionally) send "success" back so your C# code doesn't freak out.
-
-    function FullAdShow() {
-        console.log("FullAdShow stub called (Yandex removed).");
-        // If your C# expects callbacks, you could also:
-        // if (myGameInstance && myGameInstance.SendMessage) {
-        //     myGameInstance.SendMessage('YandexGame', 'CloseFullAd');
-        // }
-    }
-
-    function RewardedShow(id) {
-        console.log("RewardedShow stub called with id:", id, "(Yandex removed).");
-        if (myGameInstance && myGameInstance.SendMessage) {
-            // Pretend the reward video was watched successfully
-            myGameInstance.SendMessage('YandexGame', 'RewardVideo', 'true');
+        // Basic mobile handling
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            canvas.style.width = window.innerWidth + "px";
+            canvas.style.height = window.innerHeight + "px";
+            config.devicePixelRatio = Math.min(window.devicePixelRatio || 1, 2);
         }
-    }
 
-    function StickyAdActivity(show) {
-        console.log("StickyAdActivity stub called:", show, "(Yandex removed).");
-    }
-
-    function InitSDK() {
-        console.log("InitSDK stub called (Yandex removed).");
-        // If your game waits on this, you can simulate "SDK ready" here.
-    }
-
-    function LanguageRequest() {
-        console.log("LanguageRequest stub called (Yandex removed).");
-        if (myGameInstance && myGameInstance.SendMessage) {
-            myGameInstance.SendMessage('YandexGame', 'SetLanguage', 'en');
+        function showUnityWarning(message) {
+            console.warn(message);
         }
-    }
 
-    function Review() {
-        console.log("Review stub called (Yandex removed).");
-    }
+        let myGameInstance = null;
+        let StartUnityInstance = null;
 
-    function PromptShow() {
-        console.log("PromptShow stub called (Yandex removed).");
-    }
+        function StartUnityInstance_IfUnloaded() {
+            if (typeof StartUnityInstance === "function" && spinner.style.display !== "none") {
+                StartUnityInstance();
+            }
+        }
 
-    function SetDefaultLeaderboardName(name) {
-        console.log("SetDefaultLeaderboardName stub called:", name, "(Yandex removed).");
-    }
+        const script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+            StartUnityInstance = function () {
+                createUnityInstance(canvas, config, (progress) => {
+                    spinner.style.display = "none";
+                    progressBarEmpty.style.display = "";
+                    progressBarFull.style.width = `${100 * progress}%`;
+                }).then((unityInstance) => {
+                    myGameInstance = unityInstance;
+                    loadingCover.style.display = "none";
+                }).catch((message) => {
+                    console.error(message);
+                    showUnityWarning(message);
+                });
+            };
 
-    function SetLeaderboardScore() {
-        console.log("SetLeaderboardScore stub called (Yandex removed).");
-    }
+            StartUnityInstance_IfUnloaded();
+        };
+        script.onerror = () => {
+            showUnityWarning("Failed to load Unity loader script.");
+        };
 
-    function GetLeaderboardEntries() {
-        console.log("GetLeaderboardEntries stub called (Yandex removed).");
-    }
+        document.body.appendChild(script);
 
-    function InitPlayer() {
-        console.log("InitPlayer stub called (Yandex removed).");
-    }
+        // Stubbed Yandex SDK functions so C# calls don't explode
+        function FullAdShow() {
+            console.log("FullAdShow stub called (Yandex removed).");
+        }
 
-    function SaveYG() {
-        console.log("SaveYG stub called (Yandex removed).");
-    }
+        function RewardedShow(id) {
+            console.log("RewardedShow stub called with id:", id, "(Yandex removed).");
+            if (myGameInstance && myGameInstance.SendMessage) {
+                myGameInstance.SendMessage('YandexGame', 'RewardVideo', 'true');
+            }
+        }
 
-    function LoadYG() {
-        console.log("LoadYG stub called (Yandex removed).");
-    }
+        function StickyAdActivity(show) {
+            console.log("StickyAdActivity stub called:", show, "(Yandex removed).");
+        }
 
-    function RemoveSavesYandex() {
-        console.log("RemoveSavesYandex stub called (Yandex removed).");
-    }
-
-    function BuyPayments(id) {
-        console.log("BuyPayments stub called with id:", id, "(Yandex removed).");
-    }
-
-    function YandexPayments() {
-        console.log("YandexPayments stub called (Yandex removed).");
-    }
-</script>
-
+        function InitSDK() { console.log("InitSDK stub (Yandex removed)."); }
+        function LanguageRequest() {
+            console.log("LanguageRequest stub (Yandex removed).");
+            if (myGameInstance && myGameInstance.SendMessage) {
+                myGameInstance.SendMessage('YandexGame', 'SetLanguage', environmentData.lang);
+            }
+        }
+        function Review() { console.log("Review stub (Yandex removed)."); }
+        function PromptShow() { console.log("PromptShow stub (Yandex removed)."); }
+        function SetDefaultLeaderboardName(name) { console.log("SetDefaultLeaderboardName stub:", name); }
+        function SetLeaderboardScore() { console.log("SetLeaderboardScore stub."); }
+        function GetLeaderboardEntries() { console.log("GetLeaderboardEntries stub."); }
+        function InitPlayer() { console.log("InitPlayer stub."); }
+        function SaveYG() { console.log("SaveYG stub."); }
+        function LoadYG() { console.log("LoadYG stub."); }
+        function RemoveSavesYandex() { console.log("RemoveSavesYandex stub."); }
+        function BuyPayments(id) { console.log("BuyPayments stub:", id); }
+        function YandexPayments() { console.log("YandexPayments stub."); }
+    </script>
 </body>
 </html>
