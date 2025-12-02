@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
-    <meta http-equiv="Content-Security-Policy" content="child-src 'self'; frame-ancestors 'self'">
     <meta charset="utf-8"/>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
@@ -93,6 +92,29 @@
             <div class="spinner"></div>
         </div>
     </div>
+<script> 
+    // 🔹 NEW: stub cloudSaves so _InitCloudStorage_js doesn't crash
+    var cloudSaves = {
+        initialized: true,
+        enabled: false,
+        data: null,
+        // Methods used by typical Yandex-style plugins – safe no-ops / fake success
+        load: function () {
+            console.log("[cloudSaves] load() stub called");
+            return Promise.resolve(null);
+        },
+        save: function (data) {
+            console.log("[cloudSaves] save() stub called with data:", data);
+            this.data = data;
+            return Promise.resolve();
+        },
+        remove: function () {
+            console.log("[cloudSaves] remove() stub called");
+            this.data = null;
+            return Promise.resolve();
+        }
+    };
+</script>
 
     <script>
         // 🔹 Stub for old Yandex environment hook so Unity JS plugin stops crashing
@@ -205,3 +227,4 @@
     </script>
 </body>
 </html>
+
